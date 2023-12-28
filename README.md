@@ -1,2 +1,6 @@
 # RJPOLICE_HACK_822_Defencecops_5
-This is a repository which contains the code of a website which helps the users to Identify fake/fraud websites. which helps in decreasing cyber threats. 
+Defencecops repository is a powerful and user-friendly web application designed to empower users in identifying and reporting fake and fraudulent websites. In an era where online scams are on the rise, FraudGuard serves as your digital guardian, providing an extra layer of protection against phishing attempts and malicious websites. 
+key Features:
+Real-Time Website Analysis
+chech SSL certificate of website
+API Integration for Developers
