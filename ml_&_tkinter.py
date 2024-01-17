@@ -39,7 +39,7 @@ def makeTokens(url):
 # Load the machine learning model
 def load_model():
     # Load Url Data
-    urls_data = pd.read_csv("urldata.csv")
+    urls_data = pd.read_csv("phishing_site_urls.csv")
     y = urls_data["label"]
     url_list = urls_data["url"]
 
