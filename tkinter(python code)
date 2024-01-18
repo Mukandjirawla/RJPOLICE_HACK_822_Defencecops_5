@@ -1,55 +1,144 @@
 import tkinter as tk
 from tkinter import messagebox
-from urllib.request import urlopen
-from urllib.error import URLError
-from PIL import Image, ImageTk
+import csv
 
-def check_url():
-    url = url_entry.get()
+class FeedbackSystem:
+    def _init_(self, master):
+        self.master = master
+        self.master.title("Feedback System")
 
-    try:
-        with urlopen(url) as response:
-            # If the response code is 200, the URL is correct
-            if response.getcode() == 200:
-                messagebox.showinfo("URL Check", "URL is correct.")
-            else:
-                messagebox.showerror("URL Check", f"Invalid URL. Status code: {response.getcode()}")
-    except URLError as e:
-        messagebox.showerror("URL Check", f"Error: {e.reason}")
+        # Create variables to store user input
+        self.customer_care_var = tk.StringVar()
+        self.review_var = tk.StringVar()
 
-# Create main window
+        # Create variables to store thumbs up and thumbs down counts
+        self.thumbs_up_count = 0
+        self.thumbs_down_count = 0
+
+        # Create variables to track whether the user has voted
+        self.thumbs_up_voted = False
+        self.thumbs_down_voted = False
+
+        # Create GUI elements
+        self.create_widgets()
+
+        # Fake dataset for checking customer care and review
+        self.fake_dataset = {
+            "fake_customer_care": {"thumbs_up": 10, "thumbs_down": 2},
+            "real_customer_care": {"thumbs_up": 8, "thumbs_down": 5},
+        }
+
+    def create_widgets(self):
+        # Set the background color to black
+        self.master.configure(bg="black")
+
+        # Heading
+        tk.Label(self.master, text="Rajasthan Police", font=('Helvetica', 16, 'bold'), bg="black", fg="white").grid(row=0, columnspan=3, pady=10)
+
+        # Labels and Entry Widgets
+        tk.Label(self.master, text="Customer Care Number:", bg="black", fg="white").grid(row=1, column=0, sticky="w", padx=10, pady=5)
+        tk.Entry(self.master, textvariable=self.customer_care_var, bg="black", fg="white").grid(row=1, column=1, padx=10, pady=5)
+
+        tk.Button(self.master, text="Check Review", command=self.check_review, bg="orange", fg="black").grid(row=1, column=2, pady=5)
+
+        tk.Label(self.master, text="Review:", bg="black", fg="white").grid(row=2, column=0, sticky="w", padx=10, pady=5)
+        tk.Entry(self.master, textvariable=self.review_var, bg="black", fg="white").grid(row=2, column=1, padx=10, pady=5)
+
+        tk.Button(self.master, text="Submit Feedback", command=self.submit_feedback, bg="green", fg="white").grid(row=3, columnspan=2, pady=10)
+
+        # Thumbs Up and Thumbs Down Buttons
+        tk.Button(self.master, text="👍 Thumbs Up", command=self.thumbs_up, bg="green", fg="white", state=tk.NORMAL).grid(row=4, column=0, pady=5)
+        tk.Button(self.master, text="👎 Thumbs Down", command=self.thumbs_down, bg="green", fg="white", state=tk.NORMAL).grid(row=4, column=1, pady=5)
+
+        # Feedback Counts
+        tk.Label(self.master, text="Thumbs Up:", bg="black", fg="white").grid(row=5, column=0, sticky="e", padx=10, pady=5)
+        tk.Label(self.master, text=self.thumbs_up_count, bg="black", fg="white").grid(row=5, column=1, sticky="w", pady=5)
+
+        tk.Label(self.master, text="Thumbs Down:", bg="black", fg="white").grid(row=6, column=0, sticky="e", padx=10, pady=5)
+        tk.Label(self.master, text=self.thumbs_down_count, bg="black", fg="white").grid(row=6, column=1, sticky="w", pady=5)
+
+    def thumbs_up(self):
+        if not self.thumbs_up_voted:
+            self.thumbs_up_count += 1
+            self.update_counts()
+            self.thumbs_up_voted = True
+            # Disable the thumbs up button after voting
+            self.master.children['!button'].config(state=tk.DISABLED)
+
+    def thumbs_down(self):
+        if not self.thumbs_down_voted:
+            self.thumbs_down_count += 1
+            self.update_counts()
+            self.thumbs_down_voted = True
+            # Disable the thumbs down button after voting
+            self.master.children['!button1'].config(state=tk.DISABLED)
+
+    def update_counts(self):
+        # Update the labels displaying thumbs up and thumbs down counts
+        self.master.children['!label5'].config(text=self.thumbs_up_count)
+        self.master.children['!label7'].config(text=self.thumbs_down_count)
+
+    def submit_feedback(self):
+        customer_care = self.customer_care_var.get()
+        review = self.review_var.get()
+
+        # Check if the customer care and review are in the fake dataset
+        if customer_care in self.fake_dataset:
+            thumbs_up = self.fake_dataset[customer_care]["thumbs_up"]
+            thumbs_down = self.fake_dataset[customer_care]["thumbs_down"]
+
+            # Update counts based on the fake dataset
+            self.thumbs_up_count += thumbs_up
+            self.thumbs_down_count += thumbs_down
+            self.update_counts()
+
+            # Disable buttons after voting
+            self.master.children['!button'].config(state=tk.DISABLED)
+            self.master.children['!button1'].config(state=tk.DISABLED)
+
+            # Show a message box with fake dataset information
+            messagebox.showinfo("Fake Dataset Info", f"This is a known {customer_care} with {thumbs_up} thumbs up and {thumbs_down} thumbs down.")
+
+        else:
+            # Save feedback to CSV file (if not in the fake dataset)
+            with open('feedback_database.csv', 'a', newline='') as csvfile:
+                fieldnames = ['CustomerCare', 'Review']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                if csvfile.tell() == 0:
+                    writer.writeheader()
+
+                writer.writerow({'CustomerCare': customer_care, 'Review': review})
+
+            # Show a message box to inform the user that feedback has been submitted
+            messagebox.showinfo("Feedback Submitted", "Thank you for your feedback!")
+
+            # Clear the entry fields
+            self.customer_care_var.set('')
+            self.review_var.set()
+            # Reset voting status for the next feedback
+            self.thumbs_up_voted = False
+            self.thumbs_down_voted = False
+            # Enable thumbs up and thumbs down buttons for the next feedback
+            self.master.children['!button'].config(state=tk.NORMAL)
+            self.master.children['!button1'].config(state=tk.NORMAL)
+
+    def check_review(self):
+        customer_care = self.customer_care_var.get()
+
+        # Check if the customer care is in the fake dataset
+        if customer_care in self.fake_dataset:
+            thumbs_up = self.fake_dataset[customer_care]["thumbs_up"]
+            thumbs_down = self.fake_dataset[customer_care]["thumbs_down"]
+
+            # Show a message box with fake dataset information
+            messagebox.showinfo("Fake Dataset Info", f"This is a known {customer_care} with {thumbs_up} thumbs up and {thumbs_down} thumbs down.")
+
+        else:
+            # Show a message box if the customer care is not in the dataset
+            messagebox.showinfo("Review Info", "No information available for this customer care number.")
+
+# Create the main window
 root = tk.Tk()
-root.title("Defence Cops")
-root.configure(bg="black")
-
-# Set window dimensions and position
-window_width = root.winfo_screenwidth()
-window_height = root.winfo_screenheight()
-root.geometry(f"{window_width}x{window_height}+0+0")
-
-# Load and configure the background image
-bg_image = Image.open("another.jpg")
-bg_image = bg_image.resize((window_width, window_height))
-bg_photo = ImageTk.PhotoImage(bg_image)
-bg_label = tk.Label(root, image=bg_photo)
-bg_label.place(x=0, y=0, relwidth=1, relheight=1)
-
-# Create and place widgets
-heading_label = tk.Label(root, text="Defence Cops", font=("Helvetica", 38), fg="light green", bg="black")
-heading_label.pack(pady=70)
-
-# Create a frame for the "Enter URL" section and center it
-url_frame = tk.Frame(root, bg="black")
-url_frame.pack(expand=True)
-
-label = tk.Label(url_frame, text="Enter URL:", font=("Helvetica", 16), fg="light green", bg="black")
-label.pack(pady=20)
-
-url_entry = tk.Entry(url_frame, width=50, font=("Helvetica", 14), bg="light green", fg="black")
-url_entry.pack(pady=20)
-
-check_button = tk.Button(root, text="Check URL", command=check_url, font=("Helvetica", 16), bg="light green", fg="black")
-check_button.pack(pady=70)
-
-# Run the Tkinter event loop
+app = FeedbackSystem(root)
 root.mainloop()
