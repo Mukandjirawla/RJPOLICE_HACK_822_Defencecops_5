@@ -8,7 +8,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-import tldextract  # Import the tldextract library for extracting subdomain, domain, and suffix
+import tldextract  
 import ssl
 import socket
 import urllib3
